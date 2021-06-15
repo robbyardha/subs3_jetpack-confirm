@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/movie_fragment"
+        android:title="@string/botnavmov" />
+<!--        android:icon="@drawable/ic_movie"-->
+    <item
+        android:id="@+id/tv_fragment"
+        android:title="@string/botnavtv"/>
+    <item
+        android:id="@+id/favorite_fragment"
+        android:title="@string/botnavfav" />
+</menu>
