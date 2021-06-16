@@ -1,5 +1,6 @@
 package com.ardhacodes.subs1_jetpack.ui.detail
 
+import android.graphics.Movie
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.ardhacodes.subs1_jetpack.data.MovTvRepository
@@ -11,6 +12,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import androidx.lifecycle.Observer
+import com.ardhacodes.subs1_jetpack.data.source.datalocal.entity.MovieEntity
+import com.ardhacodes.subs1_jetpack.data.source.datalocal.entity.TvEntity
+import com.ardhacodes.subs1_jetpack.utils.MoviesTvDataDummyForTest
 import org.junit.runner.RunWith
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
@@ -20,15 +24,26 @@ import org.mockito.junit.MockitoJUnitRunner
 class DetailViewModelTest
 {
     private lateinit var viewmodel: DetailViewModel
-    val dataMov = MoviesTvDataDummy.DataMovies()[0]
-    val dataTv = MoviesTvDataDummy.DataTvShow()[0]
-    val movieId = dataMov.id
-    val tvShowId = dataTv.id
+    val dataMov = MoviesTvDataDummyForTest.DataMovies()[0]
+    val dataTv = MoviesTvDataDummyForTest.DataTvShow()[0]
+    val movieId = dataMov.idmovie
+    val tvShowId = dataTv.idtv
+
+    @get:Rule
+    var instantTaskExecutorRule = InstantTaskExecutorRule()
+
     @Mock
-    private lateinit var catalogRepository: MovTvRepository
+    private lateinit var movTvRepository: MovTvRepository
 
     @Mock
     private lateinit var observer: Observer<MovieTvEntity>
+
+    @Mock
+    private lateinit var obsMov: Observer<MovieEntity>
+
+
+    @Mock
+    private lateinit var obsTv: Observer<TvEntity>
 
     @get:Rule
     var instantTaskRule = InstantTaskExecutorRule()
@@ -36,7 +51,7 @@ class DetailViewModelTest
     @Before
     fun setDataMovie() {
 //        lateinit var catalogRepository: CatalogRepository
-        viewmodel = DetailViewModel(catalogRepository)
+        viewmodel = DetailViewModel(movTvRepository)
 //        viewmodel.setMovieById(movieId)
 //        viewmodel.setTvShowById(tvShowId)
     }
@@ -46,11 +61,11 @@ class DetailViewModelTest
     @Test
     fun getMov()
     {
-        val movie = MutableLiveData<MovieTvEntity>()
+        val movie = MutableLiveData<MovieEntity>()
         movie.value = dataMov
 
-        `when`(catalogRepository.getMovieDetail(movieId)).thenReturn(movie)
-        val movEntity = viewmodel.getDetailMovieapis(movieId).value as MovieTvEntity
+        `when`(movTvRepository.getMovieDetail(movieId)).thenReturn(movie)
+        val movEntity = viewmodel.getDetailMovie(movieId).value as MovieEntity
 
         assertNotNull(movEntity)
         assertEquals(dataMov.id, movEntity.id)
@@ -60,19 +75,19 @@ class DetailViewModelTest
         assertEquals(dataMov.overview, movEntity.overview)
         assertEquals(dataMov.vote_average, movEntity.vote_average)
         assertEquals(dataMov.poster_path, movEntity.poster_path)
-        viewmodel.getDetailMovieapis(movieId).observeForever(observer)
-        verify(observer).onChanged(dataMov)
+        viewmodel.getDetailMovie(movieId).observeForever(obsMov)
+        verify(obsMov).onChanged(dataMov)
     }
 
 
     @Test
     fun getTv()
     {
-        val tv = MutableLiveData<MovieTvEntity>()
+        val tv = MutableLiveData<TvEntity>()
         tv.value = dataTv
 
-        `when`(catalogRepository.getTvDetail(tvShowId)).thenReturn(tv)
-        val tvEntity = viewmodel.getDetailTvapis(tvShowId).value as MovieTvEntity
+        `when`(movTvRepository.getTvDetail(tvShowId)).thenReturn(tv)
+        val tvEntity = viewmodel.getDetailTv(tvShowId).value as TvEntity
 
         assertNotNull(tvEntity)
         assertEquals(dataTv.id, tvEntity.id)
@@ -82,18 +97,18 @@ class DetailViewModelTest
         assertEquals(dataTv.overview, tvEntity.overview)
         assertEquals(dataTv.vote_average, tvEntity.vote_average)
         assertEquals(dataTv.poster_path, tvEntity.poster_path)
-        viewmodel.getDetailTvapis(tvShowId).observeForever(observer)
-        verify(observer).onChanged(dataTv)
+        viewmodel.getDetailTv(tvShowId).observeForever(obsTv)
+        verify(obsTv).onChanged(dataTv)
     }
 
     @Test
     fun getAllData()
     {
-        val movie = MutableLiveData<MovieTvEntity>()
+        val movie = MutableLiveData<MovieEntity>()
         movie.value = dataMov
 
-        `when`(catalogRepository.getMovieDetail(movieId)).thenReturn(movie)
-        val movEntity = viewmodel.getDetailMovieapis(movieId).value as MovieTvEntity
+        `when`(movTvRepository.getMovieDetail(movieId)).thenReturn(movie)
+        val movEntity = viewmodel.getDetailMovie(movieId).value as MovieEntity
 
         assertNotNull(movEntity)
         assertEquals(dataMov.id, movEntity.id)
@@ -103,14 +118,14 @@ class DetailViewModelTest
         assertEquals(dataMov.overview, movEntity.overview)
         assertEquals(dataMov.vote_average, movEntity.vote_average)
         assertEquals(dataMov.poster_path, movEntity.poster_path)
-        viewmodel.getDetailMovieapis(movieId).observeForever(observer)
-        verify(observer).onChanged(dataMov)
+        viewmodel.getDetailMovie(movieId).observeForever(obsMov)
+        verify(obsMov).onChanged(dataMov)
 
-        val tv = MutableLiveData<MovieTvEntity>()
+        val tv = MutableLiveData<TvEntity>()
         tv.value = dataTv
 
-        `when`(catalogRepository.getTvDetail(tvShowId)).thenReturn(tv)
-        val tvEntity = viewmodel.getDetailTvapis(tvShowId).value as MovieTvEntity
+        `when`(movTvRepository.getTvDetail(tvShowId)).thenReturn(tv)
+        val tvEntity = viewmodel.getDetailTv(tvShowId).value as TvEntity
 
         assertNotNull(tvEntity)
         assertEquals(dataTv.id, tvEntity.id)
@@ -120,8 +135,8 @@ class DetailViewModelTest
         assertEquals(dataTv.overview, tvEntity.overview)
         assertEquals(dataTv.vote_average, tvEntity.vote_average)
         assertEquals(dataTv.poster_path, tvEntity.poster_path)
-        viewmodel.getDetailTvapis(tvShowId).observeForever(observer)
-        verify(observer).onChanged(dataTv)
+        viewmodel.getDetailTv(tvShowId).observeForever(obsTv)
+        verify(obsTv).onChanged(dataTv)
     }
 
 //    old data

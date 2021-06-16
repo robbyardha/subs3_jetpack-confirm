@@ -3,12 +3,16 @@ package com.ardhacodes.subs1_jetpack.ui.main
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.paging.PagedList
 import com.ardhacodes.subs1_jetpack.data.MovTvRepository
 import com.ardhacodes.subs1_jetpack.data.MovieTvEntity
+import com.ardhacodes.subs1_jetpack.data.source.datalocal.entity.MovieEntity
+import com.ardhacodes.subs1_jetpack.data.source.datalocal.entity.TvEntity
 import com.ardhacodes.subs1_jetpack.ui.detail.DetailViewModel
 import com.ardhacodes.subs1_jetpack.ui.movie.MovieViewModel
 import com.ardhacodes.subs1_jetpack.ui.tv.TvViewModel
 import com.ardhacodes.subs1_jetpack.utils.MoviesTvDataDummy
+import com.ardhacodes.subs1_jetpack.vo.Resource
 import com.nhaarman.mockitokotlin2.verify
 import junit.framework.Assert
 import junit.framework.TestCase
@@ -28,6 +32,7 @@ class MainActivityTest
     private lateinit var viewmodeldetail: DetailViewModel
     private lateinit var viewmodelmov: MovieViewModel
     private lateinit var viewmodeltv: TvViewModel
+    private lateinit var viewmodelmain: MainViewModel
 //    val dataMov = MoviesTvDataDummy.DataMovies()[0]
 //    val dataTv = MoviesTvDataDummy.DataTvShow()[0]
     val dataMov = MoviesTvDataDummy.DataMovies()
@@ -42,6 +47,19 @@ class MainActivityTest
     @Mock
     private lateinit var observer: Observer<List<MovieTvEntity>>
 
+    @Mock
+    private lateinit var obsMov: Observer<Resource<PagedList<MovieEntity>>>
+
+    @Mock
+    private lateinit var obsTv: Observer<Resource<PagedList<TvEntity>>>
+
+    @Mock
+    private lateinit var moviePagedList: PagedList<MovieEntity>
+
+    @Mock
+    private lateinit var tvPagedList: PagedList<TvEntity>
+
+
     @Before
     fun setData()
     {
@@ -51,8 +69,10 @@ class MainActivityTest
         viewmodeltv = TvViewModel(catalogRepos)
         viewmodeltv.getdDataTv()
 
-
         viewmodeldetail = DetailViewModel(catalogRepos)
+
+
+        viewmodelmain = MainViewModel(catalogRepos)
 //        viewmodeldetail.setMovieById(movieId)
 //        viewmodeldetail.setTvShowById(tvShowId)
     }
@@ -60,52 +80,70 @@ class MainActivityTest
     @Test
     fun getPopularMovie()
     {
-        val movie = MutableLiveData<List<MovieTvEntity>>()
-        movie.value = dataMov
+        val mov = Resource.success(moviePagedList)
+        Mockito.`when`(mov.data?.size).thenReturn(5)
+        val movie = MutableLiveData<Resource<PagedList<MovieEntity>>>()
+        movie.value = mov
 
-        Mockito.`when`(catalogRepos.getPopularMovies()).thenReturn(movie)
+        Mockito.`when` (catalogRepos.getPopularMovies()).thenReturn(movie)
+        val movieEntity = viewmodelmain.getPopularMovie().value?.data
+        Mockito.verify(catalogRepos).getPopularMovies()
+        org.junit.Assert.assertNotNull(movieEntity)
+        org.junit.Assert.assertEquals(5 , movieEntity?.size)
 
-        val dataListMovie = viewmodelmov.getDataMovieApi().value
-
-        verify(catalogRepos).getPopularMovies()
-        Assert.assertNotNull(dataListMovie)
-        Assert.assertEquals(10, dataListMovie?.size)
-
-        viewmodelmov.getDataMovieApi().observeForever(observer)
-        verify(observer).onChanged(dataMov)
+        viewmodelmain.getPopularMovie().observeForever(obsMov)
+        verify(obsMov).onChanged(mov)
     }
 
     @Test
-    fun getTvShowed()
+    fun getPopularTv()
     {
-        val tv = MutableLiveData<List<MovieTvEntity>>()
-        tv.value = dataTv
+        val tv = Resource.success(tvPagedList)
+        Mockito.`when`(tv.data?.size).thenReturn(5)
+        val tvMutable = MutableLiveData<Resource<PagedList<TvEntity>>>()
+        tvMutable.value = tv
 
-        Mockito.`when`(catalogRepos.getTv()).thenReturn(tv)
+        Mockito.`when` (catalogRepos.getTv()).thenReturn(tvMutable)
+        val tvEnt = viewmodelmain.getPopularTv().value?.data
+        Mockito.verify(catalogRepos).getTv()
+        org.junit.Assert.assertNotNull(tvEnt)
+        org.junit.Assert.assertEquals(5 , tvEnt?.size)
 
-        val dataListTv = viewmodeltv.getDataTvAPI().value
-
-        verify(catalogRepos).getTv()
-        Assert.assertNotNull(dataListTv)
-        Assert.assertEquals(11, dataListTv?.size)
-
-        viewmodeltv.getDataTvAPI().observeForever(observer)
-        verify(observer).onChanged(dataListTv)
+        viewmodelmain.getPopularTv().observeForever(obsTv)
+        verify(obsTv).onChanged(tv)
     }
 
-    @Test
-    fun getListMovieItem() {
-        val movies = viewmodelmov.getdDataMovie()
-        TestCase.assertNotNull(movies)
-        assertEquals(10, movies.size)
-    }
-
-    @Test
-    fun getListTvShowItem() {
-        val tvShows = viewmodeltv.getdDataTv()
-        TestCase.assertNotNull(tvShows)
-        assertEquals(11, tvShows.size)
-    }
+//    @Test
+//    fun getTvShowed()
+//    {
+//        val tv = MutableLiveData<List<MovieTvEntity>>()
+//        tv.value = dataTv
+//
+//        Mockito.`when`(catalogRepos.getTv()).thenReturn(tv)
+//
+//        val dataListTv = viewmodeltv.getDataTvAPI().value
+//
+//        verify(catalogRepos).getTv()
+//        Assert.assertNotNull(dataListTv)
+//        Assert.assertEquals(11, dataListTv?.size)
+//
+//        viewmodeltv.getDataTvAPI().observeForever(observer)
+//        verify(observer).onChanged(dataListTv)
+//    }
+//
+//    @Test
+//    fun getListMovieItem() {
+//        val movies = viewmodelmov.getdDataMovie()
+//        TestCase.assertNotNull(movies)
+//        assertEquals(10, movies.size)
+//    }
+//
+//    @Test
+//    fun getListTvShowItem() {
+//        val tvShows = viewmodeltv.getdDataTv()
+//        TestCase.assertNotNull(tvShows)
+//        assertEquals(11, tvShows.size)
+//    }
 
 //    @Test
 //    fun getNotNull()
