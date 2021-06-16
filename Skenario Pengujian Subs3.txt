@@ -1,0 +1,21 @@
+Skenario Testing
+
+DetailViewModelTest
+1. Memastikan Data tidak Null
+2. Memastikan Data sesuai dengan id selected
+3. Menampilkan data detail sesuai id selected
+
+FavoriteViewModelTest
+1. Memastikan data Movie tidak Null
+2. Memastikan data Tv tidak Null
+
+MainActivityTest
+1. Memastikan data Movie tidak Null
+2. Memastikan data Tv tidak Null
+
+MainActivityInsTest
+1. Memastikan data tidak null
+2. Menampilkan data Movie
+3. Menampilkan data movie detail sesuai dengan id selected
+4. Menampilkan data tv 
+5. Menampilkan data tv detail sesuai dengan id selected
